@@ -6,6 +6,7 @@
 #include "GameObject.h"
 #include "Player.h"
 #include "Opponent.h"
+#include "Ball.h"
 
 class Engine
 {
@@ -13,13 +14,13 @@ class Engine
         sf::RenderWindow window;
         sf::CircleShape shape;
 
-
-        GameObject player2;
         Player player;
         Opponent opponent;
+        Ball ball;
 
     public:
         float deltaTime;
+
         Engine();
         void Start();
         void Update();
@@ -37,6 +38,8 @@ Engine::Engine()
 
     window.create(sf::VideoMode(resolution.x, resolution.y), "Steel Engine", sf::Style::Default);
     */
+
+   ball.GetCollisionInfo(player, opponent);
 
     window.create(sf::VideoMode(400, 400), "PONG", sf::Style::Default);
 
@@ -80,16 +83,19 @@ void Engine::Start()
 
 void Engine::Update()
 {
+    player.Update(deltaTime);
     opponent.Update(deltaTime);
+    ball.Update(deltaTime);
 }
 
 void Engine::Input()
 {
-
+    player.Input();
 }
 
 void Engine::Draw()
 {
     player.Draw(window);
     opponent.Draw(window);
+    ball.Draw(window);
 }
