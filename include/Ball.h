@@ -5,6 +5,8 @@
 #include "GameObject.h"
 #include <vector>
 #include <cmath>
+#include <stdlib.h>
+#include <time.h>
 
 class Ball : public GameObject
 {
@@ -15,10 +17,13 @@ class Ball : public GameObject
         float moveSpeed = 50;
         float mapSizeX = 400;
         float mapSizeY = 400;
+        double pi = 3.14159265359;
 
         Player* player;
         Opponent* opponent;
-        bool CheckForCollision();
+        bool CheckForCollision(sf::Vector2f);
+        void ResetBall();
+        void DetectGoal();
 
     public:
         Ball();
@@ -41,8 +46,12 @@ Ball::Ball()
     shape.setPosition(sf::Vector2f(200,200));
     position = sf::Vector2f(200,200);
 
+    //Setup random number generator
+    srand(time(NULL));
+
     // Set the balls start direction
-    moveDirection = sf::Vector2f(moveSpeed, moveSpeed);
+    ResetBall();
+    //moveDirection = sf::Vector2f(moveSpeed, moveSpeed);
 };
 
 Ball::~Ball()
@@ -57,41 +66,61 @@ void Ball::Draw(sf::RenderWindow &window)
 
 void Ball::Update(float &deltaTime)
 {
-    //std::cout << player->position.y << std::endl;
-
     // Update position
-    //previousPosition = position;
     Move(moveDirection.x, moveDirection.y, deltaTime);
     shape.setPosition(position);
-
-    std::cout << "MoveDirection: " << moveDirection.x << " , " << moveDirection.y << std::endl;
     
-    // Handle collision (THIS CODE IS GONNA BE SO UGLY)
-    if(CheckForCollision())
+    // Handle collision
+    if(CheckForCollision(this->position))
     {
         // Calculate the 90 degree angle counterclockwise
-        moveDirection.x = std::cos(90 * (moveDirection.x)) - std::sin(90 * (moveDirection.y));
-        moveDirection.y = std::sin(90 * (moveDirection.x)) + std::cos(90 * (moveDirection.y));
-        moveDirection.x *= moveSpeed;
-        moveDirection.y *= moveSpeed;
-        //moveDirection = sf::Vector2f(0,0);
+        sf::Vector2f potentialMoveDirection;
+        potentialMoveDirection.x = (-moveDirection.x) * std::cos(90 * (pi/180)) - (-moveDirection.y) * std::sin(90 * (pi/180));
+        potentialMoveDirection.y = (-moveDirection.x) * std::sin(90 * (pi/180)) + (-moveDirection.y) * std::cos(90 * (pi/180));
+
+        // Simulate moving in that direction, and check for collisions
+        if(CheckForCollision(this->position + moveDirection * deltaTime))
+        {
+            moveDirection = potentialMoveDirection;
+        }
+        else // If that way results in a collision, attempt 90 degree clockwise
+        {
+            std::cout << "I got triggered" << std::endl;
+            moveDirection.x = (-moveDirection.x) * std::cos(270 * (pi/180)) - (-moveDirection.y) * std::sin(270 * (pi/180));
+            moveDirection.y = (-moveDirection.x) * std::sin(270 * (pi/180)) + (-moveDirection.y) * std::cos(270 * (pi/180));
+        }
     }
+
+    // Check for position
+    DetectGoal();
 };
 
-bool::Ball::CheckForCollision()
+void Ball::ResetBall()
+{
+    std::cout << "I got also got triggered" << std::endl;
+    this->position = sf::Vector2f(200,200);
+    int newDegree = rand() % 361;
+    moveDirection = sf::Vector2f(moveSpeed, moveSpeed);
+    moveDirection.x = (moveDirection.x) * std::cos(newDegree * (pi/180)) - (moveDirection.y) * std::sin(newDegree * (pi/180));
+    moveDirection.y = (moveDirection.x) * std::sin(newDegree * (pi/180)) + (moveDirection.y) * std::cos(newDegree * (pi/180));
+};
+
+bool Ball::CheckForCollision(sf::Vector2f aPosition)
 {
     if(
         // Check if collides with player
-        (this->position.x + this->shape.getRadius() > player->position.x - player->collider.x / 2 && this->position.x + this->shape.getRadius() < player->position.x + player->collider.x / 2
-        && this->position.y + this->shape.getRadius() > player->position.y - player->collider.y / 2 && this->position.y + this->shape.getRadius() < player->position.y + player->collider.y / 2)
+        (aPosition.x + this->shape.getRadius() > player->position.x - player->collider.x / 2 && aPosition.x + this->shape.getRadius() < player->position.x + player->collider.x / 2
+        && aPosition.y + this->shape.getRadius() > player->position.y - player->collider.y / 2 && aPosition.y + this->shape.getRadius() < player->position.y + player->collider.y / 2)
         ||
         // Check if collides with lower wall
-        (this->position.y + this->shape.getRadius() > mapSizeY)
+        (aPosition.y + this->shape.getRadius() > mapSizeY)
         ||
-        (this->position.y - this->shape.getRadius() < 0)
+        // Check if collides with upper wall
+        (aPosition.y - this->shape.getRadius() < 0)
         ||
-        (this->position.x + this->shape.getRadius() > opponent->position.x - opponent->collider.x / 2 && this->position.x + this->shape.getRadius() < opponent->position.x - opponent->collider.x / 2
-        && this->position.y + this->shape.getRadius() > opponent->position.y - opponent->collider.y / 2 && this->position.y + this->shape.getRadius() < opponent->position.y - opponent->collider.y / 2)
+        // Check if collides with opponent
+        (aPosition.x - this->shape.getRadius() > opponent->position.x - opponent->collider.x / 2 && aPosition.x - this->shape.getRadius() < opponent->position.x + opponent->collider.x / 2
+        && aPosition.y + this->shape.getRadius() > opponent->position.y - opponent->collider.y / 2 && aPosition.y + this->shape.getRadius() < opponent->position.y + opponent->collider.y / 2)
         )
     {
         return true;
@@ -100,8 +129,15 @@ bool::Ball::CheckForCollision()
     {
         return false;
     }
+};
 
 
+void Ball::DetectGoal()
+{
+    if(this->position.x - this->shape.getRadius() < 0 || this->position.x + this->shape.getRadius() > mapSizeX)
+    {
+        ResetBall();
+    }
 };
 
 void Ball::GetCollisionInfo(Player &_player, Opponent &_opponent)
