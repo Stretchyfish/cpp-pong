@@ -12,7 +12,6 @@ class Ball : public GameObject
 {
     private:
         sf::CircleShape shape;
-        sf::Vector2f previousPosition;
         sf::Vector2f moveDirection;
         float moveSpeed = 50;
         float mapSizeX = 400;
@@ -46,12 +45,11 @@ Ball::Ball()
     shape.setPosition(sf::Vector2f(200,200));
     position = sf::Vector2f(200,200);
 
-    //Setup random number generator
+    // Setup random number generator
     srand(time(NULL));
 
     // Set the balls start direction
     ResetBall();
-    //moveDirection = sf::Vector2f(moveSpeed, moveSpeed);
 };
 
 Ball::~Ball()
@@ -85,7 +83,6 @@ void Ball::Update(float &deltaTime)
         }
         else // If that way results in a collision, attempt 90 degree clockwise
         {
-            std::cout << "I got triggered" << std::endl;
             moveDirection.x = (-moveDirection.x) * std::cos(270 * (pi/180)) - (-moveDirection.y) * std::sin(270 * (pi/180));
             moveDirection.y = (-moveDirection.x) * std::sin(270 * (pi/180)) + (-moveDirection.y) * std::cos(270 * (pi/180));
         }
@@ -97,7 +94,6 @@ void Ball::Update(float &deltaTime)
 
 void Ball::ResetBall()
 {
-    std::cout << "I got also got triggered" << std::endl;
     this->position = sf::Vector2f(200,200);
     int newDegree = rand() % 361;
     moveDirection = sf::Vector2f(moveSpeed, moveSpeed);

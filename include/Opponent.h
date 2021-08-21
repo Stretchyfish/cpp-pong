@@ -7,11 +7,15 @@ class Opponent : public GameObject
 {
     private:
         sf::RectangleShape shape;
+        enum actions { up, down, nothing};
+        actions currentAction;
+        float moveSpeed = 120;
 
     public:
         Opponent();
         void Draw(sf::RenderWindow &window);
         void Update(float &deltaTime);
+        void Input();
 
 };
 
@@ -35,10 +39,37 @@ void Opponent::Draw(sf::RenderWindow &window)
 
 void Opponent::Update(float &deltaTime)
 {
-    Move(0, 10, deltaTime);
+    // Figure out what direction to move opponent
+    switch (currentAction)
+    {
+    case up:
+        Move(0, -moveSpeed, deltaTime);
+        break;
+    case down:
+        Move(0, moveSpeed, deltaTime);
+        break;
+    case nothing:
+        break;
+    }
 
     // Set graphics relative position
     shape.setPosition(position);
+}
+
+void Opponent::Input()
+{
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::S) && position.y + shape.getSize().y / 2 <= 400)
+    {
+        currentAction = actions::down;
+    }
+    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) && position.y - shape.getSize().y / 2 >= 0)
+    {
+        currentAction = actions::up;
+    }
+    else
+    {
+        currentAction = actions::nothing;
+    }
 }
 
 

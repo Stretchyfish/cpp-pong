@@ -12,7 +12,6 @@ class Engine
 {
     private:
         sf::RenderWindow window;
-        sf::CircleShape shape;
 
         Player player;
         Opponent opponent;
@@ -30,22 +29,11 @@ class Engine
 
 Engine::Engine()
 {
-    // Full screen settings
-    /*
-    sf::Vector2f resolution;
-    resolution.x = sf::VideoMode::getDesktopMode().width;
-    resolution.y = sf::VideoMode::getDesktopMode().height;
+    // Add variables to ball
+    ball.GetCollisionInfo(player, opponent);
 
-    window.create(sf::VideoMode(resolution.x, resolution.y), "Steel Engine", sf::Style::Default);
-    */
-
-   ball.GetCollisionInfo(player, opponent);
-
+    // Create window
     window.create(sf::VideoMode(400, 400), "PONG", sf::Style::Default);
-
-    std::cout << "print me" << std::endl;
-    shape = sf::CircleShape(50.0f);
-    shape.setFillColor(sf::Color(0, 0, 0));
 }
 
 void Engine::Start()
@@ -91,6 +79,7 @@ void Engine::Update()
 void Engine::Input()
 {
     player.Input();
+    opponent.Input();
 }
 
 void Engine::Draw()

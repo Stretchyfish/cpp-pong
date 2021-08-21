@@ -33,7 +33,7 @@ GameObject::~GameObject()
 
 void GameObject::Draw(sf::RenderWindow &window)
 {
-    std::cout << "I am hidden" << std::endl;
+
 };
 
 void GameObject::Update(float &deltaTime)
